@@ -1,17 +1,20 @@
 #!/bin/bash
 
 set -euo pipefail
+date=$(date)
+alert_message=""
+
+
 ##For disk space monitoring---------
 
-available_space=$( df -h --total | grep "total" | awk {'print $5'} | tr -d ' %' )
-disk_space_threshold=80
+used_space=$( df -h --total | grep "total" | awk {'print $5'} | tr -d ' %' )
+disk_space_threshold=10
 
-if [[ $available_space -le $disk_space_threshold ]]
+if [[ $used_space -ge $disk_space_threshold ]]
 then
-        echo "low space $available_space"
-else
-        echo "enough space $available_space"
+        alert_message+="Warning!: diskspace running out. current usage= $used_space %  "
 fi
+
 #-------------------------------------------------------------------------
 ##For memory usage monitoring--------
 
@@ -20,43 +23,44 @@ memory_threshold=500
 
 if [[ $available_memory -le $memory_threshold ]]
 then
-        echo "memory space running out. current space- $available_memory M"
-else
-        echo "sufficient memory space. current space- $available_memory M"
+        alert_message+=" Warning! memory space running out. current space- $available_memory M"
 fi
+
 #----------------------------------------------------------------------
 ##For Cpu utilization monitoring-------
 
 current_cpu_usage=$( uptime | awk -F'load average:' '{print $2}' | awk '{print $1 + $2 + $3}' )
-cpu_threshold=1
+cpu_threshold=0
 
 echo "$current_cpu_usage"
 if (( $(echo "$current_cpu_usage >= $cpu_threshold" | bc -l) ))
 then
-        echo "CPU usage is high. current usage- $current_cpu_usage %"
-else
-        echo "CPU usage is moderate. no need for action. current usage- $current_cpu_usage %"
+        alert_message+="  CPU usage is high. current usage- $current_cpu_usage % "
 
 fi
+
 #----------------------------------------------------------------------
 # Logging
 
-log_file="resource_usage.log"
-log_path="/home/devops/logsdir"
-
 if [ -f /home/devops/logsdir/resource_usage.log ]
 then
-        echo "$available_space $available_memory $current_cpu_usage" > /home/devops/logdir/resource_usage.log
+        echo "$date - Current disk usage = $used_space % | Current available memory = $available_memory Mi | Current CPU usage = $current_cpu_usage %" >> /home/devops/logsdir/resource_usage.log
 
 else
-        if [ -d $log_path ]
+        if [ -d /home/devops/logsdir ]
         then
-                touch $log_file
+                touch /home/devops/logsdir/resource_usage.log
         else
-                mkdir -p $log_path
-                touch $log_path
-                echo "$available_space $available_memory $current_cpu_usage" > $log_path/$log_file
-
+                mkdir -p /home/devops/logsdir
+                touch /home/devops/logsdir/resource_usage.log
+                echo "$date - Current disk usage = $used_space % | Current available memory = $available_memory Mi | Current CPU usage = $current_cpu_usage %" >> /home/devops/logsdir/resource_usage.log
         fi
-exit
+fi
+
+#-----------------------------------------------------------------------------------
+#mail config
+
+if [[ -n $alert_message ]]
+then
+        echo -e "Subject: System Alert! \n\n $alert_message" | sendmail -v #Your Destination Mail Here
 fi
