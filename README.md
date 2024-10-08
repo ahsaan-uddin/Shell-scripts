@@ -1,18 +1,27 @@
 # Shell-scripts
 # Resource Monitor Script
 
-## Overview
-The `resource_monitor.sh` script monitors system resources such as CPU usage, memory usage, and disk usage. It logs the usage data every 5 minutes and sends email alerts if any thresholds are exceeded:
+# System Monitoring Script
 
-- **CPU Usage:** Sends an alert if CPU usage exceeds 80%.
-- **Disk Usage:** Sends an alert if available disk space falls below 20%.
+This Bash script monitors key system resources, including disk space, memory, and CPU usage, providing real-time data and logging it for future reference. It ensures that system administrators are promptly alerted when resource usage exceeds set thresholds, allowing them to take preventive action before system performance is affected.
 
-The resource usage data is logged in a file named `resource_usage.log`.
+### Features:
 
-## Features
-- Logs CPU, memory, and disk usage every 5 minutes.
-- Sends email alerts when resource thresholds are breached.
-- Easy to configure for custom thresholds and email notifications.
+- **Disk Space Monitoring:**
+The script checks the total disk usage. If it exceeds a specified threshold (e.g., 10%), an alert is generated.
+- **Memory Usage Monitoring:**
+It tracks available memory and sends a warning if memory falls below a certain threshold (e.g., 500 MiB).
+- **CPU Usage Monitoring:**
+The script monitors CPU load average and alerts if CPU usage is too high.
+- **Logging:**
+Every 5 minutes, the script logs the system resource usage to a file (`resource_usage.log`) for future reference using crontab
+- **Email Alerts:**
+If any resource usage crosses the set thresholds, an email alert is sent to the administrator. The email includes warnings for high CPU usage, low memory, or insufficient disk space.
+
+### Technologies Used:
+
+- **Linux & Bash:** The core of the script is written in Bash for Linux environments.
+- **SMTP & Postfix:** The email alert functionality is set up using SMTP and Postfix.
 
 ## Usage
 ### 1. Clone the Repository:
